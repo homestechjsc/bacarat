@@ -1,1 +1,556 @@
-xbxvbfbfsdbdfgbdfbfd
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baccarat Bankroll Simulator</title>
+<style>
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    color: #111827;
+}
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+}
+.card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+.settings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+}
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+.btn-banker {
+    background: #2563eb;
+    color: white;
+}
+.btn-player {
+    background: #dc2626;
+    color: white;
+}
+.btn-tie {
+    background: #6b7280;
+    color: white;
+}
+.btn-reset {
+    background: #111827;
+    color: white;
+}
+.selected {
+    outline: 4px solid #f59e0b;
+}
+.bet-selection,
+.result-selection {
+    text-align: center;
+    margin: 15px 0;
+}
+.summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+.summary-box {
+    padding: 15px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+.summary-box strong {
+    display: block;
+    font-size: 21px;
+    margin-top: 5px;
+}
+.profit {
+    color: #16a34a;
+}
+.loss {
+    color: #dc2626;
+}
+.status {
+    text-align: center;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+.status.normal {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+.status.win {
+    background: #f0fdf4;
+    color: #15803d;
+}
+.status.stop {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+.table-wrapper {
+    overflow-x: auto;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+th,
+td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 10px;
+    text-align: center;
+}
+th {
+    background: #111827;
+    color: white;
+}
+.win-row {
+    background: #f0fdf4;
+}
+.loss-row {
+    background: #fef2f2;
+}
+.tie-row {
+    background: #f9fafb;
+}
+.note {
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+}
+@media(max-width:600px) {
+    .container {
+        padding: 10px;
+    }
+    .card {
+        padding: 15px;
+    }
+    button {
+        width: 28%;
+        padding: 12px 5px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎲 Baccarat Bankroll Simulator</h1>
+<div class="card">
+<h2>⚙️ Thiết lập phiên chơi</h2>
+<div class="settings">
+<div>
+
+Vốn ban đầu
+
+</div>
+<div>
+
+Tiền cược mỗi ván
+
+</div>
+<div>
+
+Mục tiêu lợi nhuận
+
+</div>
+<div>
+
+Stop-loss
+
+</div>
+</div>
+<p class="note">
+
+Banker thắng: lợi nhuận 95% tiền cược nếu tính hoa hồng 5%.
+
+Player thắng: lợi nhuận 100% tiền cược.
+
+Nếu kết quả là Tie: cược Banker hoặc Player được hoàn lại tiền cược.
+
+</p>
+
+🔄 Bắt đầu phiên mới
+
+</button>
+</div>
+<div class="card">
+<h2>1️⃣ Chọn cửa bạn đã cược</h2>
+<div class="bet-selection">
+
+💙 Banker
+
+</button>
+
+❤️ Player
+
+</button>
+</div>
+<h2>2️⃣ Nhập kết quả thực tế</h2>
+<div class="result-selection">
+
+Kết quả: Banker
+
+</button>
+
+Kết quả: Player
+
+</button>
+
+Kết quả: Tie
+
+</button>
+</div>
+<div id="selectedBet"
+class="status normal">
+
+Chưa chọn cửa cược
+
+</div>
+<div id="status"
+class="status normal">
+
+Đang chờ nhập ván đầu tiên
+
+</div>
+</div>
+<div class="card">
+<h2>📊 Tổng quan phiên chơi</h2>
+<div class="summary">
+<div class="summary-box">
+
+Vốn hiện tại
+
+<strong id="currentBankroll">
+
+5.000.000đ
+
+</strong>
+</div>
+<div class="summary-box">
+
+Tổng lãi/lỗ
+
+<strong id="totalProfit">
+
+0đ
+
+</strong>
+</div>
+<div class="summary-box">
+
+Số ván
+
+<strong id="totalRounds">
+
+0
+
+</strong>
+</div>
+<div class="summary-box">
+
+Thắng
+
+<strong id="winCount">
+
+0
+
+</strong>
+</div>
+<div class="summary-box">
+
+Thua
+
+<strong id="lossCount">
+
+0
+
+</strong>
+</div>
+<div class="summary-box">
+
+Hòa
+
+<strong id="tieCount">
+
+0
+
+</strong>
+</div>
+</div>
+</div>
+<div class="card">
+<h2>📋 Lịch sử 20 ván</h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th>Ván</th>
+<th>Cửa đã cược</th>
+<th>Kết quả thực tế</th>
+<th>Tiền cược</th>
+<th>Lãi/Lỗ</th>
+<th>Vốn sau ván</th>
+<th>Trạng thái</th>
+</tr>
+</thead>
+<tbody id="historyTable">
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<script>
+let bankroll = 5000000;
+let initialBankroll = 5000000;
+let betAmount = 100000;
+let profitTarget = 500000;
+let stopLoss = 500000;
+let selectedBet = null;
+let history = [];
+// Định dạng tiền
+function formatMoney(number) {
+return new Intl.NumberFormat('vi-VN').format(number) + 'đ';
+}
+// Đọc thiết lập
+function loadSettings() {
+initialBankroll =
+Number(document.getElementById('initialBankroll').value);
+betAmount =
+Number(document.getElementById('betAmount').value);
+profitTarget =
+Number(document.getElementById('profitTarget').value);
+stopLoss =
+Number(document.getElementById('stopLoss').value);
+}
+// Chọn cửa cược
+function selectBet(bet) {
+selectedBet = bet;
+document.getElementById('betBanker')
+.classList.remove('selected');
+document.getElementById('betPlayer')
+.classList.remove('selected');
+if (bet === 'Banker') {
+document.getElementById('betBanker')
+.classList.add('selected');
+}
+else {
+document.getElementById('betPlayer')
+.classList.add('selected');
+}
+document.getElementById('selectedBet')
+.className = 'status normal';
+document.getElementById('selectedBet')
+.innerText =
+'Cửa đã chọn: ' + bet;
+}
+// Nhập kết quả
+function addResult(result) {
+loadSettings();
+if (!selectedBet) {
+alert('Vui lòng chọn cửa đã cược trước.');
+return;
+}
+if (history.length >= 20) {
+alert('Đã đủ 20 ván.');
+return;
+}
+let profitLoss = 0;
+let status = '';
+// Kết quả Tie
+if (result === 'Tie') {
+profitLoss = 0;
+status = 'Hòa';
+}
+// Banker thắng
+else if (
+selectedBet === 'Banker' &&
+result === 'Banker'
+) {
+profitLoss = betAmount * 0.95;
+status = 'Thắng';
+}
+// Player thắng
+else if (
+selectedBet === 'Player' &&
+result === 'Player'
+) {
+profitLoss = betAmount;
+status = 'Thắng';
+}
+// Thua
+else {
+profitLoss = -betAmount;
+status = 'Thua';
+}
+bankroll += profitLoss;
+history.push({
+round: history.length + 1,
+bet: selectedBet,
+result: result,
+betAmount: betAmount,
+profitLoss: profitLoss,
+bankroll: bankroll,
+status: status
+});
+updateDisplay();
+checkStopConditions();
+// Reset lựa chọn cửa cược
+selectedBet = null;
+document.getElementById('betBanker')
+.classList.remove('selected');
+document.getElementById('betPlayer')
+.classList.remove('selected');
+document.getElementById('selectedBet')
+.innerText =
+'Chưa chọn cửa cược';
+}
+// Cập nhật giao diện
+function updateDisplay() {
+let totalProfit =
+bankroll - initialBankroll;
+document.getElementById('currentBankroll')
+.innerText =
+formatMoney(bankroll);
+let profitElement =
+document.getElementById('totalProfit');
+profitElement.innerText =
+(totalProfit >= 0 ? '+' : '') +
+formatMoney(totalProfit);
+profitElement.className =
+totalProfit >= 0 ? 'profit' : 'loss';
+document.getElementById('totalRounds')
+.innerText =
+history.length;
+document.getElementById('winCount')
+.innerText =
+history.filter(x => x.status === 'Thắng').length;
+document.getElementById('lossCount')
+.innerText =
+history.filter(x => x.status === 'Thua').length;
+document.getElementById('tieCount')
+.innerText =
+history.filter(x => x.status === 'Hòa').length;
+let table =
+document.getElementById('historyTable');
+table.innerHTML = '';
+history.forEach(item => {
+let row =
+document.createElement('tr');
+if (item.status === 'Thắng') {
+row.className = 'win-row';
+}
+else if (item.status === 'Thua') {
+row.className = 'loss-row';
+}
+else {
+row.className = 'tie-row';
+}
+row.innerHTML = `
+<td>${item.round}</td>
+<td>${item.bet}</td>
+<td>${item.result}</td>
+<td>${formatMoney(item.betAmount)}</td>
+<td class="${item.profitLoss >= 0 ? 'profit' : 'loss'}">
+${item.profitLoss >= 0 ? '+' : ''}
+${formatMoney(item.profitLoss)}
+</td>
+<td>${formatMoney(item.bankroll)}</td>
+<td>${item.status}</td>
+`;
+table.appendChild(row);
+});
+}
+// Kiểm tra mục tiêu
+function checkStopConditions() {
+let totalProfit =
+bankroll - initialBankroll;
+let statusBox =
+document.getElementById('status');
+if (totalProfit >= profitTarget) {
+statusBox.className =
+'status win';
+statusBox.innerText =
+'🎉 Đã đạt mục tiêu lợi nhuận. Nên dừng phiên.';
+return;
+}
+if (totalProfit <= -stopLoss) {
+statusBox.className =
+'status stop';
+statusBox.innerText =
+'🛑 Đã chạm Stop-loss. Nên dừng phiên.';
+return;
+}
+if (history.length >= 20) {
+statusBox.className =
+'status normal';
+statusBox.innerText =
+'✅ Đã hoàn thành 20 ván.';
+return;
+}
+statusBox.className =
+'status normal';
+statusBox.innerText =
+`Đã chơi ${history.length}/20 ván.`;
+}
+// Reset phiên
+function resetGame() {
+loadSettings();
+bankroll = initialBankroll;
+history = [];
+selectedBet = null;
+document.getElementById('historyTable')
+.innerHTML = '';
+document.getElementById('betBanker')
+.classList.remove('selected');
+document.getElementById('betPlayer')
+.classList.remove('selected');
+updateDisplay();
+document.getElementById('status')
+.className =
+'status normal';
+document.getElementById('status')
+.innerText =
+'Đang chờ nhập ván đầu tiên';
+document.getElementById('selectedBet')
+.innerText =
+'Chưa chọn cửa cược';
+}
+// Khởi tạo
+loadSettings();
+updateDisplay();
+</script>
+</body>
+</html>
